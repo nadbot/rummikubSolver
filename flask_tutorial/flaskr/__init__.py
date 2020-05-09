@@ -37,6 +37,10 @@ def create_app(test_config=None):
 
     from . import blog
     app.register_blueprint(blog.bp)
+    # app.add_url_rule('/', endpoint='index')
+
+    from . import rummikub_solver_controller
+    app.register_blueprint(rummikub_solver_controller.bp, url_prefix='/rummikub')
     app.add_url_rule('/', endpoint='index')
 
     return app
