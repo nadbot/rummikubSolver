@@ -1,5 +1,10 @@
+# when using pycharm to run code, use the following imports
 from flask_tutorial.rummikub import rummikub_functions as rf
 from flask_tutorial.rummikub.Player import Player
+
+# when using flask to display gameboard use the following imports
+# from rummikub import rummikub_functions as rf
+# from rummikub.Player import Player
 
 # define players
 player0 = Player(0, 'Player0', [])

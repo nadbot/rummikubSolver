@@ -10,16 +10,23 @@ def create_piece_stack():
     for number in range(1, 14):
         # print(number)
         for color in ['red', 'blue', 'black', 'yellow']:
-            a = (number, color)
+            # add 0 or 1 as 3rd element to distinguish between doubles
+            a = (number, color, 0)
+            b = (number, color, 1)
             # print(a)
             pieces.append(a)
-            pieces.append(a)
-    pieces.append((0, "Joker"))
-    pieces.append((0, "Joker"))
+            pieces.append(b)
+    pieces.append((0, "Joker", 0))
+    pieces.append((0, "Joker", 1))
     return pieces
 
 
 def get_random_chip(piece_stack):
+    """
+    Method to get a random chip from a given stack
+    :param piece_stack: List of pieces
+    :return: random tuple representing chip
+    """
     number = int((random.random() * len(piece_stack)))
     chip = piece_stack[number]
     piece_stack.remove(chip)
@@ -27,7 +34,13 @@ def get_random_chip(piece_stack):
 
 
 # TODO for 1,2,3,4 it returns only 2,3,4
+# TODO add tests for different scenarios
 def find_streets(stack):
+    """
+    Method to find street. Sorts list by number and filters by color, then checks if next elements are ascending
+    :param stack: Pieces that can be checked for street
+    :return: all possible turns
+    """
     playable_items = []
     # sort by the number
     items = sorted(stack, key=lambda x: x[0])
@@ -42,7 +55,13 @@ def find_streets(stack):
             index_element = same_color.index(element)
             if len(same_color) == index_element+1:
                 break
-            # TODO fix if chip is double (it will stop, as next item has same number and color
+            # Ignore if it is the same item twice (for example two black 7s)
+            if same_color[index_element+1][0] == element[0] and same_color[index_element+1][1] == element[1]:
+                print("Found double")
+                print(element)
+                print(same_color[index_element+1])
+                element = same_color[index_element + 1]
+                continue
             # test if the number of the next item is one bigger and color is the same
             if same_color[index_element+1][0] == element[0]+1 and same_color[index_element+1][1] == element[1]:
                 # print(same_color[index_element+1])
@@ -71,7 +90,14 @@ def color_in_list(chip,items):
             return True
     return False
 
+
 def find_3_of_a_kind(stack):
+    """
+    Method to find 3 or more of the same value.
+    Loops through the list and filters for each value. Then checks if there are 3 or more with different colors
+    :param stack: Pieces that can be used for 3 of a kind
+    :return: all possible moves
+    """
     playable_items = []
     # sort by the number
     items = sorted(stack, key=lambda x: x[1])
@@ -95,6 +121,11 @@ def find_3_of_a_kind(stack):
 
 
 def find_matches(stack):
+    """
+    Method to merge possibilities of streets and 3 of a kind
+    :param stack: Pieces that can be used for street or 3 of a kind
+    :return: All possible solutions to both
+    """
     return find_3_of_a_kind(stack) + find_streets(stack)
     # return find_streets(stack)
 
@@ -141,6 +172,11 @@ def add_street_to_items(street, items):
 
 
 def get_in_the_game(player):
+    """
+    Method to define whether a person can enter the game (has 30 points he can play)
+    :param player: Player whose turn it is
+    :return: best move the player can do to get in the game 
+    """
     playable_items = find_matches(player.hand)
     # TODO find smartest way to choose items (don't play one street which destroys 2 other)
     # TODO allow to use several streets to get out
