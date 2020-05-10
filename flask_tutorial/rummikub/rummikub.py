@@ -33,11 +33,19 @@ for index in range(0,4):
         print("Drawing chip " + str(chip))
         player.draw(chip)
         # print(len(player.hand))
-        street = rf.move(player, gameboard)
-        if street:
+        street, modified_gameboard, added = rf.move(player, gameboard)
+        if street and not modified_gameboard:
             print("Laying onto board")
             player.lay_chips(street, gameboard)
             # print(len(player.hand))
+        elif street and modified_gameboard:
+            print("Adding to gameboard")
+            print("Previous gameboard: "+str(gameboard))
+            print("New gameboard: "+str(street))
+            print(added)
+            if rf.correct_move(gameboard, street, added):
+                print("Correct move")
+                gameboard = street
         else:
             print("Unable to move")
         print("Gameboard:")

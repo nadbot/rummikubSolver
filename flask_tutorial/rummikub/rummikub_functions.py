@@ -1,5 +1,5 @@
 import random
-
+import networkx as nx
 
 def create_piece_stack():
     """
@@ -33,6 +33,28 @@ def get_random_chip(piece_stack):
     return chip
 
 
+def correct_move(gameboard, streets, added_pieces):
+    """
+    Method to check whether the planned move is correct.
+    A move is correct if all items of the gameboard are still there and only the added values are new.
+    Additionally, each list must contain 3 or more items
+    :param gameboard: Gameboard before the move
+    :param streets: Gameboard after the move
+    :param added_pieces: Pieces added during the move
+    :return: True if the move is correct, otherwise False
+    """
+    flat_list_gameboard = [item for sublist in gameboard for item in sublist]
+    flat_list_new_gameboard = [item for sublist in streets for item in sublist]
+    if len(flat_list_gameboard) + len(added_pieces) != flat_list_new_gameboard:
+        return False
+    for item in flat_list_gameboard:
+        if item not in flat_list_new_gameboard:
+            return False
+    for street in streets:
+        if len(street) < 3:
+            return False
+    return True
+
 def find_smaller_streets(playable_items):
     """
     Gets list of playable moves from find_streets and adds smaller possible streets to that list
@@ -63,7 +85,7 @@ def find_streets(stack):
     playable_items = []
     # sort by the number
     items = sorted(stack, key=lambda x: x[0])
-    print(items)
+    # print(items)
 
     for index in range(0, len(items)-1):
         element = items[index]
@@ -84,9 +106,9 @@ def find_streets(stack):
                 break
             # Ignore if it is the same item twice (for example two black 7s)
             if same_color[index_element+1][0] == element[0] and same_color[index_element+1][1] == element[1]:
-                print("Found double")
-                print(element)
-                print(same_color[index_element+1])
+                # print("Found double")
+                # print(element)
+                # print(same_color[index_element+1])
                 element = same_color[index_element + 1]
                 continue
             # test if the number of the next item is one bigger and color is the same
@@ -97,14 +119,14 @@ def find_streets(stack):
             else:
                 break
         if len(possible_street) > 2:
-            print(possible_street)
+            # print(possible_street)
             playable_items.append(possible_street)
             # for item in possible_street:
             #     player.hand.remove(item)
     # adds smaller substreets to the possible moves
     playable_items = find_smaller_streets(playable_items)
-    print("Possible street moves:")
-    print(playable_items)
+    # print("Possible street moves:")
+    # print(playable_items)
     return playable_items
 
 
@@ -128,14 +150,14 @@ def find_smaller_of_a_kind(playable_items):
         :param playable_items: Possible moves, the user can do
         :return: list of possible moves, including shorter moves
         """
-    print("Finding smaller of a kind")
+    # print("Finding smaller of a kind")
     for street in playable_items:
         if len(street) == 4:
             for element in street:
-                print("Removing"+str(element))
+                # print("Removing"+str(element))
                 smaller_street = street.copy()
                 smaller_street.remove(element)
-                print(smaller_street)
+                # print(smaller_street)
                 if smaller_street not in playable_items:
                     playable_items.append(smaller_street)
     return playable_items
@@ -150,7 +172,7 @@ def find_3_of_a_kind(stack):
     playable_items = []
     # sort by the number
     items = sorted(stack, key=lambda x: x[1])
-    print(items)
+    # print(items)
     for index in range(0, len(items) - 1):
         element = items[index]
         # get only the ones of the same number as element
@@ -161,13 +183,13 @@ def find_3_of_a_kind(stack):
             if not color_in_list(item, possible_street):
                 possible_street.append(item)
         if len(possible_street) > 2:
-            print(possible_street)
+            # print(possible_street)
             playable_items.append(possible_street)
             # for item in possible_street:
             #     player.hand.remove(item)
     playable_items = find_smaller_of_a_kind(playable_items)
-    print("Possible 3 or more of a kind moves:")
-    print(playable_items)
+    # print("Possible 3 or more of a kind moves:")
+    # print(playable_items)
     return playable_items
 
 
@@ -177,8 +199,8 @@ def find_matches(stack):
     :param stack: Pieces that can be used for street or 3 of a kind
     :return: All possible solutions to both
     """
-    print("Length of stack:")
-    print(len(stack))
+    # print("Length of stack:")
+    # print(len(stack))
     return find_3_of_a_kind(stack) + find_streets(stack)
     # return find_streets(stack)
 
@@ -238,8 +260,8 @@ def get_in_the_game(player):
         streets = [start_street]
         items = []
         items = add_street_to_items(start_street, items)
-        print("Items")
-        print(items)
+        # print("Items")
+        # print(items)
         for street in playable_items:
             points = calculate_points_for_street(street)
             can_be_added = street_not_in_use(street, items)
@@ -303,14 +325,15 @@ def items_not_used_once(streets):
 
 
 def get_minimum_move_recursive(playable_items, items):
-    print("Entering recursion"+str(len(playable_items)))
-    print(playable_items)
-    print(items)
+    # print("Entering recursion "+str(len(playable_items)))
+    # print(playable_items)
+    # print(items)
     unused = unused_item(playable_items, items)
     if not unused:
-        print("Each item is used")
+        # print("Each item is used")
+        pass
     else:
-        print("Item that is not used is:" + str(unused))
+        # print("Item that is not used is:" + str(unused))
         return False
 
     items_used_several_times, streets_used_several_times = items_not_used_once(playable_items)
@@ -320,15 +343,37 @@ def get_minimum_move_recursive(playable_items, items):
     if len(items_used_several_times) == 0:
         print("Found best solution")
         return playable_items
-    print("Items are used more than once")
+    # print("Items are used more than once")
     for index, street in enumerate(playable_items):
-        print("Using sublist")
+        # print("Using sublist")
         next_iteration = playable_items.copy()
         next_iteration.pop(index)
-        print(next_iteration)
+        # print(next_iteration)
         solution = get_minimum_move_recursive(next_iteration, items)
         if solution:
             return solution
+
+
+def shorten_possible_moves(flat_list):
+    playable_items = find_matches(flat_list)
+    # print("Found the following matches:")
+    # print(playable_items)
+    print(len(playable_items))
+    # print("Removing double moves")
+    playable_items = remove_double_streets(playable_items)
+    print(len(playable_items))
+    print(playable_items)
+    unused = unused_item(playable_items, flat_list)
+    if unused:
+        print("Item that is not used is:" + str(unused))
+        return False
+    print("Removing items which are constrained by their neighbors")
+    necessary_neighbors = values_appearing_together(playable_items, flat_list)
+    playable_items = remove_possibilities_violating_necessary_neighbors(playable_items, necessary_neighbors)
+    print(playable_items)
+    print(len(playable_items))
+    return playable_items
+
 
 def get_minimum_moves(flat_list):
     """
@@ -337,24 +382,69 @@ def get_minimum_moves(flat_list):
     :param items:
     :return:
     """
-    # flat_list = items
+    # # flat_list = items
+    #
+    # # print(flat_list)
+    # playable_items = find_matches(flat_list)
+    # # print("Found the following matches:")
+    # # print(playable_items)
+    # # print(len(playable_items))
+    # # print("Removing double moves")
+    # playable_items = remove_double_streets(playable_items)
+    # print(len(playable_items))
+    # print(playable_items)
+    # unused = unused_item(playable_items, flat_list)
+    # if unused:
+    #     print("Item that is not used is:" + str(unused))
+    #     return False
+    # print("Removing items which are constrained by their neighbors")
+    # necessary_neighbors = values_appearing_together(playable_items, flat_list)
+    # playable_items = remove_possibilities_violating_necessary_neighbors(playable_items, necessary_neighbors)
+    # print(playable_items)
+    # print(len(playable_items))
+    playable_items = shorten_possible_moves(flat_list)
+    if playable_items:
+        clusters = split_clusters(playable_items, flat_list)
+        best_solutions = []
+        for cluster in clusters:
+            flat_list = list(cluster)
+            print("Evaluating cluster: ")
+            print(flat_list)
+            playable_items = shorten_possible_moves(flat_list)
+            if playable_items:
+                print("Checking whether each item is used")
+                print(playable_items)
+                print(len(playable_items))
+                # TODO sometimes does not find best solution containing all elements:
+                #  Previous gameboard: [[(4, 'black', 1), (4, 'blue', 0), (4, 'yellow', 1)],
+                #  [(7, 'blue', 0), (7, 'red', 1), (7, 'yellow', 0)],
+                #  [(8, 'blue', 1), (9, 'blue', 0), (10, 'blue', 1)], [(9, 'blue', 1), (9, 'red', 0), (9, 'yellow', 0)]]
+                #  New gameboard: [[(4, 'black', 1), (4, 'blue', 0), (4, 'yellow', 1)],
+                #  [(8, 'blue', 1), (9, 'blue', 0), (10, 'blue', 1)]]
 
-    print(flat_list)
-    playable_items = find_matches(flat_list)
-    print("Found the following matches:")
-    print(playable_items)
-    print(len(playable_items))
-    print("Removing double moves")
-    playable_items = remove_double_streets(playable_items)
-    print(len(playable_items))
-    print("Removing items which are constrained by their neighbors")
-    necessary_neighbors = values_appearing_together(playable_items, flat_list)
-    playable_items = remove_possibilities_violating_necessary_neighbors(playable_items, necessary_neighbors)
-    print(len(playable_items))
-    print("Checking whether each item is used")
-    best_solution = get_minimum_move_recursive(playable_items, flat_list)
-    print(best_solution)
-    return best_solution
+                # TODO ignores double elements:
+                #  Previous gameboard:
+                #  [[(10, 'blue', 1), (10, 'red', 1), (10, 'yellow', 1)],
+                #  [(1, 'black', 1), (2, 'black', 0), (3, 'black', 1)],
+                #  [(3, 'red', 1), (4, 'red', 0), (5, 'red', 1)],
+                #  [(12, 'black', 1), (12, 'blue', 1), (12, 'red', 0)],
+                #  [(10, 'black', 0), (10, 'blue', 0), (10, 'red', 0)],
+                #  [(4, 'red', 1), (5, 'red', 0), (6, 'red', 1)],
+                #  [(11, 'blue', 0), (12, 'blue', 0), (13, 'blue', 1)]]
+                #  New gameboard:
+                #  [(10, 'red', 1), (10, 'blue', 1), (10, 'yellow', 1)],
+                #  [(1, 'black', 1), (2, 'black', 0), (3, 'black', 1)],
+                #  [(10, 'blue', 0), (10, 'black', 0), (10, 'red', 0)],
+                #  [(11, 'blue', 0), (12, 'blue', 1), (13, 'blue', 1)],
+                #  [(12, 'black', 1), (12, 'blue', 0), (12, 'red', 0)],
+                #  [(3, 'red', 1), (4, 'red', 0), (5, 'red', 1), (6, 'red', 1), (7, 'red', 1)]]
+                best_solution = get_minimum_move_recursive(playable_items, flat_list)
+                if best_solution:
+                    print(best_solution)
+                    best_solutions = best_solutions + best_solution
+                else:
+                    return []
+        return best_solutions
     # check whether each item is used:
     # unused = unused_item(playable_items, flat_list)
     # if not unused:
@@ -368,7 +458,6 @@ def get_minimum_moves(flat_list):
     # print(items_used_several_times)
     # print(streets_used_several_times)
     # print(len(streets))
-
 
 def equal_lists(list1, list2):
     list1 = sorted(list1, key=lambda x: x[1])
@@ -401,7 +490,7 @@ def remove_double_streets(playable_moves):
     for street in playable_moves:
         if not list_in_lists(street, single_possible_moves):
             single_possible_moves.append(street)
-    print(single_possible_moves)
+    # print(single_possible_moves)
     return single_possible_moves
 
 
@@ -426,22 +515,69 @@ def values_appearing_together(playable_moves, items):
                     if element not in move and element in neighbors:
                         neighbors.remove(element)
         necessary_neighbors[item] = neighbors
-    print(necessary_neighbors)
+    # print(necessary_neighbors)
     return necessary_neighbors
 
 
 def remove_possibilities_violating_necessary_neighbors(playable_moves, necessary_neighbors):
+    """
+    Checks which neighbors are necessary and removes items that violate these
+    :param playable_moves: List of possible moves
+    :param necessary_neighbors: Dict of necessary neighbors for each item
+    :return: List of possible moves where each move respects necessary neighbors
+    """
     for element in necessary_neighbors:
+        if element[2] == 1:
+            id = 0
+        else:
+            id = 1
+        double_element = (element[0], element[1], id)
         for neighbor in necessary_neighbors[element]:
             for move in playable_moves:
-                if neighbor in move and element not in move:
+                if neighbor in move and element not in move and double_element not in move:
                     # print("Found move to delete")
                     # print(move)
                     # print(element)
                     # print(neighbor)
                     playable_moves.remove(move)
-    print(playable_moves)
+    # print(playable_moves)
     return playable_moves
+
+
+def split_clusters(playable_moves, items):
+    sets = playable_moves
+    # sets = [['A', 'B', 'C'], ['C', 'D', 'E'], ['F', 'G', 'H']]
+    G = nx.Graph()
+    for s in sets:
+        l = list(s)
+        G.add_edges_from(zip(l, l[1:]))
+    print(list(nx.connected_components(G)))
+    # print(list(list(nx.connected_components(G))[0]))
+    return list(nx.connected_components(G))
+    # clusters = []
+    # neighbors_dict = {}
+    # for item in items:
+    #     neighbors = []
+    #     for move in playable_moves:
+    #         if item in move:
+    #             for element in move:
+    #                 if element not in neighbors:
+    #                     neighbors.append(element)
+    #     neighbors_dict[item] = neighbors_dict
+    #
+    # for item in neighbors_dict:
+    #     cluster_item = [item]
+    #
+
+# playable = [[(6, 'black', 0), (6, 'red', 1), (6, 'yellow', 1)], [(1, 'black', 0), (1, 'blue', 1), (1, 'red', 0), (1, 'yellow', 0)], [(9, 'black', 1), (9, 'blue', 0), (9, 'red', 1), (9, 'yellow', 1)], [(9, 'yellow', 0), (9, 'black', 1), (9, 'blue', 0), (9, 'red', 1)], [(1, 'blue', 1), (1, 'red', 0), (1, 'yellow', 0)], [(1, 'black', 0), (1, 'red', 0), (1, 'yellow', 0)], [(1, 'black', 0), (1, 'blue', 1), (1, 'yellow', 0)], [(1, 'black', 0), (1, 'blue', 1), (1, 'red', 0)], [(9, 'blue', 0), (9, 'red', 1), (9, 'yellow', 1)], [(9, 'black', 1), (9, 'red', 1), (9, 'yellow', 1)], [(9, 'black', 1), (9, 'blue', 0), (9, 'yellow', 1)], [(9, 'black', 1), (9, 'blue', 0), (9, 'red', 1)], [(9, 'yellow', 0), (9, 'blue', 0), (9, 'red', 1)], [(9, 'yellow', 0), (9, 'black', 1), (9, 'red', 1)], [(9, 'yellow', 0), (9, 'black', 1), (9, 'blue', 0)], [(9, 'yellow', 1), (10, 'yellow', 0), (11, 'yellow', 1)], [(9, 'yellow', 0), (10, 'yellow', 0), (11, 'yellow', 1)]]
+# items = []
+# for move in playable:
+#     for item in move:
+#         if item not in items:
+#             items.append(item)
+# print(items)
+# split_clusters(playable,items)
+# items = [(6, 'black', 0), (6, 'red', 1), (6, 'yellow', 1), (1, 'black', 0), (1, 'blue', 1), (1, 'red', 0), (1, 'yellow', 0), (9, 'black', 1), (9, 'blue', 0), (9, 'red', 1), (9, 'yellow', 1), (9, 'yellow', 0),(10, 'yellow', 0), (11, 'yellow', 1)]
 
 
 # TODO currently even without double moves, possible combinations is too large
@@ -473,33 +609,45 @@ def add_to_gameboard(player, gameboard):
         :return: best move the player can do
         """
     print("Adding to gameboard")
-    first_item = player.hand[0]
-    flat_list = [item for sublist in gameboard for item in sublist]
-    flat_list.append(first_item)
-    print("Adding "+ str(first_item))
-    playable_items = find_matches(flat_list)
+    # TODO add possibility to add multiple items at once to the gameboard
+    for item in player.hand:
 
-    '''
-    Idea:
-    If at least one item is not used, continue with player.hand[1]
-    If every item is used: 
-        Check if item is used twice
-    
-    # TODO add way to add two chips to gameboard at once
-    '''
+        first_item = item
+        flat_list = [item for sublist in gameboard for item in sublist]
+        flat_list.append(first_item)
+        print("Adding "+ str(first_item))
+        # playable_items = find_matches(flat_list)
+        best_move = get_minimum_moves(flat_list)
+        if best_move:
+            print("Added "+str(first_item))
+            print("Best move:")
+            print(best_move)
+            return best_move, [item]
+        else:
+            print("No best move found")
+    return [], []
+    # '''
+    # Idea:
+    # If at least one item is not used, continue with player.hand[1]
+    # If every item is used:
+    #     Check if item is used twice
+    #
+    # # TODO add way to add two chips to gameboard at once
+    # '''
     # TODO
     # TODO recursive check
     # recursive_get_minimum_moves(playable_items, flat_list)
     # flat_list_playable_items = [item for sublist in playable_items for item in sublist]
 
-    print("Possible moves")
-    print(playable_items)
-    
-    flat_list = [item for sublist in gameboard for item in sublist]
-    flat_list.append((1, 'red', 1))
-    print("Adding " + str((1, 'red', 1)))
-    best_move = get_minimum_moves(flat_list)
-    print(best_move)
+    # print("Possible moves")
+    # print(playable_items)
+
+    # flat_list = [item for sublist in gameboard for item in sublist]
+    # flat_list.append((1, 'red', 1))
+    # print("Adding " + str((1, 'red', 1)))
+    # best_move = get_minimum_moves(flat_list)
+    # print(best_move)
+
     # gameboard = playable_items
     # return playable_items
     # # TODO sometimes does not find the same street twice if it didnt work the first time
@@ -540,10 +688,14 @@ def move(player, gameboard):
     :return:
     """
     street = []
+    added = []
+    modified_gameboard = False
+    # TODO once in the game, continue playing until no possible move
     if not player.entered_game:
         street = get_in_the_game(player)
         if street:
             player.entered_game = True
-    # else:
-        # street = add_to_gameboard(player, gameboard)
-    return street
+    else:
+        street, added = add_to_gameboard(player, gameboard)
+        modified_gameboard = True
+    return street, modified_gameboard, added
