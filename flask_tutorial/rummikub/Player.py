@@ -13,9 +13,6 @@ class Player:
     def draw(self, chip):
         self.hand.append(chip)
 
-    def got_30_points(self):
-        self.entered_game = True
-
     # def save_playable_chips(self,chip):
     #     self.playable_chips.append(chip)
     #     self.hand.remove(chip)

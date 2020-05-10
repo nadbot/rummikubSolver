@@ -1,10 +1,10 @@
 # when using pycharm to run code, use the following imports
-from flask_tutorial.rummikub import rummikub_functions as rf
-from flask_tutorial.rummikub.Player import Player
+# from flask_tutorial.rummikub import rummikub_functions as rf
+# from flask_tutorial.rummikub.Player import Player
 
 # when using flask to display gameboard use the following imports
-# from rummikub import rummikub_functions as rf
-# from rummikub.Player import Player
+from flask_tutorial.rummikub import rummikub_functions as rf
+from flask_tutorial.rummikub.Player import Player
 
 # define players
 player0 = Player(0, 'Player0', [])
@@ -33,7 +33,7 @@ for index in range(0,4):
         print("Drawing chip " + str(chip))
         player.draw(chip)
         # print(len(player.hand))
-        street = rf.get_in_the_game(player)
+        street = rf.move(player, gameboard)
         if street:
             print("Laying onto board")
             player.lay_chips(street, gameboard)
