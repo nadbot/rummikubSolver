@@ -1,6 +1,7 @@
 import random
 import networkx as nx
 
+
 def create_piece_stack():
     """
     Creates the 106 pieces needed for Rummikub
@@ -45,7 +46,7 @@ def correct_move(gameboard, streets, added_pieces):
     """
     flat_list_gameboard = [item for sublist in gameboard for item in sublist]
     flat_list_new_gameboard = [item for sublist in streets for item in sublist]
-    if len(flat_list_gameboard) + len(added_pieces) != flat_list_new_gameboard:
+    if len(flat_list_gameboard) + len(added_pieces) != len(flat_list_new_gameboard):
         return False
     for item in flat_list_gameboard:
         if item not in flat_list_new_gameboard:
@@ -54,6 +55,7 @@ def correct_move(gameboard, streets, added_pieces):
         if len(street) < 3:
             return False
     return True
+
 
 def find_smaller_streets(playable_items):
     """
@@ -375,7 +377,7 @@ def shorten_possible_moves(flat_list):
     return playable_items
 
 
-def get_minimum_moves(flat_list):
+def get_minimum_moves(flat_list, added_items, gameboard):
     """
     Method that recursively smallers list until each item is used only once
     :param streets:
@@ -405,8 +407,14 @@ def get_minimum_moves(flat_list):
     playable_items = shorten_possible_moves(flat_list)
     if playable_items:
         clusters = split_clusters(playable_items, flat_list)
-        best_solutions = []
-        for cluster in clusters:
+        modified_cluster = find_modified_cluster(clusters, added_items)
+        untouched_moves = find_unaffected_moves(gameboard, modified_cluster)
+        print("Added items:")
+        print(added_items)
+        print("Modified clusters:")
+        print(modified_cluster)
+        best_solutions = untouched_moves
+        for cluster in modified_cluster:
             flat_list = list(cluster)
             print("Evaluating cluster: ")
             print(flat_list)
@@ -458,6 +466,7 @@ def get_minimum_moves(flat_list):
     # print(items_used_several_times)
     # print(streets_used_several_times)
     # print(len(streets))
+
 
 def equal_lists(list1, list2):
     list1 = sorted(list1, key=lambda x: x[1])
@@ -554,6 +563,37 @@ def split_clusters(playable_moves, items):
     print(list(nx.connected_components(G)))
     # print(list(list(nx.connected_components(G))[0]))
     return list(nx.connected_components(G))
+
+
+def find_modified_cluster(clusters, added_items):
+    """
+    Method to find cluster that changed when appending an item
+    :param clusters: List of clusters of chips
+    :param added_items: Item(s) that were added to the board
+    :return: clusters in which added item is found
+    """
+    changed_clusters = []
+    for item in added_items:
+        for cluster in clusters:
+            if item in cluster and cluster not in changed_clusters:
+                changed_clusters.append(cluster)
+    return changed_clusters
+
+
+def find_unaffected_moves(gameboard, clusters):
+    """
+    Method that returns the moves which have not changed because of the cluster
+    :param gameboard: Gameboard with existing moves
+    :param cluster: List of clusters which is affected by the added values
+    :return: List of moves that are not affected by the cluster
+    """
+    moves = gameboard.copy()
+    for cluster in clusters:
+        for item in cluster:
+            for move in gameboard:
+                if item in move and move in moves:
+                    moves.remove(move)
+    return moves
     # clusters = []
     # neighbors_dict = {}
     # for item in items:
@@ -610,19 +650,17 @@ def add_to_gameboard(player, gameboard):
         """
     print("Adding to gameboard")
     # TODO add possibility to add multiple items at once to the gameboard
-    for item in player.hand:
-
-        first_item = item
+    for first_item in player.hand:
         flat_list = [item for sublist in gameboard for item in sublist]
         flat_list.append(first_item)
         print("Adding "+ str(first_item))
         # playable_items = find_matches(flat_list)
-        best_move = get_minimum_moves(flat_list)
+        best_move = get_minimum_moves(flat_list, [first_item], gameboard)
         if best_move:
             print("Added "+str(first_item))
             print("Best move:")
             print(best_move)
-            return best_move, [item]
+            return best_move, [first_item]
         else:
             print("No best move found")
     return [], []

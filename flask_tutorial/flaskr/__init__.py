@@ -2,8 +2,6 @@ import os
 
 from flask import Flask
 
-from flaskr import auth
-
 
 def create_app(test_config=None):
     # create and configure the app
@@ -31,13 +29,14 @@ def create_app(test_config=None):
     def hello():
         return 'Hello, World!'
 
-    from . import db
-    db.init_app(app)
-    app.register_blueprint(auth.bp)
+    # TODO fix auth (table user not found)
+    # from . import db
+    # db.init_app(app)
+    # app.register_blueprint(auth.bp)
 
     from . import blog
     app.register_blueprint(blog.bp)
-    # app.add_url_rule('/', endpoint='index')
+    app.add_url_rule('/', endpoint='index')
 
     from . import rummikub_solver_controller
     app.register_blueprint(rummikub_solver_controller.bp, url_prefix='/rummikub')

@@ -23,5 +23,9 @@ class Player:
             for chip in street:
                 self.hand.remove(chip)
 
+    def remove_chips(self, added_chips):
+        for chip in added_chips:
+            self.hand.remove(chip)
+
     def __str__(self):
         return str([str(x) for x in self.hand])

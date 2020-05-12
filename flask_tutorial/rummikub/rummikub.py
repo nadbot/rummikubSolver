@@ -46,6 +46,7 @@ for index in range(0,4):
             if rf.correct_move(gameboard, street, added):
                 print("Correct move")
                 gameboard = street
+                player.remove_chips(added)
         else:
             print("Unable to move")
         print("Gameboard:")
