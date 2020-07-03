@@ -60,6 +60,96 @@ def test_move_go_out():
     pass
 
 
+def test_move_add_single_chip_to_three_of_kind():
+    player = Player(0, 'Player_test', [(1, 'red', 0)])
+    player.entered_game = True
+    gameboard = [[(1, 'black', 0), (1, 'yellow', 0), (1, 'blue', 0)]]
+    street, modified_gameboard, added = rf.move(player, gameboard)
+    assert street == [[(1, 'black', 0), (1, 'blue', 0), (1, 'red', 0),(1, 'yellow', 0)]]
+
+
+def test_move_add_single_chip_to_street():
+    player = Player(0, 'Player_test', [(4, 'red', 0)])
+    player.entered_game = True
+    gameboard = [[(5, 'red', 0), (6, 'red', 0), (7, 'red', 0)]]
+    street, modified_gameboard, added = rf.move(player, gameboard)
+    assert street == [[(4, 'red', 0), (5, 'red', 0), (6, 'red', 0), (7, 'red', 0)]]
+
+    # check that it does not work if color is different
+    player = Player(0, 'Player_test', [(4, 'blue', 0)])
+    player.entered_game = True
+    gameboard = [[(5, 'red', 0), (6, 'red', 0), (7, 'red', 0)]]
+    street, modified_gameboard, added = rf.move(player, gameboard)
+    assert modified_gameboard == False
+
+    # check that it works when other chip with same value is used
+    player = Player(0, 'Player_test', [(4, 'red', 1)])
+    player.entered_game = True
+    gameboard = [[(5, 'red', 0), (6, 'red', 0), (7, 'red', 0)]]
+    street, modified_gameboard, added = rf.move(player, gameboard)
+    assert street == [[(4, 'red', 1), (5, 'red', 0), (6, 'red', 0), (7, 'red', 0)]]
+
+    # check different street
+    player = Player(0, 'Player_test', [(1, 'red', 0)])
+    player.entered_game = True
+    gameboard = [[(2, 'red', 0), (3, 'red', 0), (4, 'red', 0)]]
+    street, modified_gameboard, added = rf.move(player, gameboard)
+    assert street == [[(1, 'red', 0), (2, 'red', 0), (3, 'red', 0), (4, 'red', 0)]]
+
+    # check appending at end
+    player = Player(0, 'Player_test', [(4, 'red', 0)])
+    player.entered_game = True
+    gameboard = [[(1, 'red', 0), (2, 'red', 0), (3, 'red', 0)]]
+    street, modified_gameboard, added = rf.move(player, gameboard)
+    assert street == [[(1, 'red', 0), (2, 'red', 0), (3, 'red', 0), (4, 'red', 0)]]
+
+
+def test_splitting_street():
+    # does not work if exactly same chip is used twice
+    player = Player(0, 'Player_test', [(4, 'red', 1)])
+    player.entered_game = True
+    gameboard = [[(2, 'red', 0), (3, 'red', 0), (4, 'red', 0), (5, 'red', 0), (6, 'red', 0), (7, 'red', 0)]]
+    street, modified_gameboard, added = rf.move(player, gameboard)
+    assert street == [[(4, 'red', 0), (5, 'red', 0), (6, 'red', 0), (7, 'red', 0)],
+                      [(2, 'red', 0), (3, 'red', 0), (4, 'red', 1)]]
+
+
+def test_street_from_three_of_kinds():
+    pass
+
+
+def test_three_of_kinds_from_streets():
+    pass
+
+
 def test_move():
     # TODO
+    # TODO test the following: Why is there no 2,3,4,5???
+    #  [[(9, 'black', 1), (9, 'blue', 0), (9, 'red', 0), (9, 'yellow', 1)],
+    #  [(9, 'red', 1), (9, 'black', 1), (9, 'blue', 0), (9, 'yellow', 1)],
+    #  [(9, 'blue', 0), (9, 'red', 0), (9, 'yellow', 1)],
+    #  [(9, 'black', 1), (9, 'red', 0), (9, 'yellow', 1)],
+    #  [(9, 'black', 1), (9, 'blue', 0), (9, 'yellow', 1)],
+    #  [(9, 'black', 1), (9, 'blue', 0), (9, 'red', 0)],
+    #  [(9, 'red', 1), (9, 'blue', 0), (9, 'yellow', 1)],
+    #  [(9, 'red', 1), (9, 'black', 1), (9, 'yellow', 1)],
+    #  [(9, 'red', 1), (9, 'black', 1), (9, 'blue', 0)],
+    #  [(1, 'red', 1), (2, 'red', 1), (3, 'red', 0), (4, 'red', 0),
+    #  (5, 'red', 0), (6, 'red', 0), (7, 'red', 0), (8, 'red', 0), (9, 'red', 0)],
+    #  [(4, 'red', 0), (5, 'red', 0), (6, 'red', 0), (7, 'red', 0), (8, 'red', 0), (9, 'red', 0)],
+    #  [(5, 'red', 0), (6, 'red', 0), (7, 'red', 0), (8, 'red', 0), (9, 'red', 0)],
+    #  [(5, 'red', 1), (6, 'red', 0), (7, 'red', 0), (8, 'red', 0), (9, 'red', 0)],
+    #  [(1, 'red', 1), (2, 'red', 1), (3, 'red', 0), (4, 'red', 0), (5, 'red', 0),
+    #  (6, 'red', 0), (7, 'red', 0), (8, 'red', 0)],
+    #  [(4, 'red', 0), (5, 'red', 0), (6, 'red', 0), (7, 'red', 0), (8, 'red', 0)],
+    #  [(5, 'red', 0), (6, 'red', 0), (7, 'red', 0), (8, 'red', 0)],
+    #  [(5, 'red', 1), (6, 'red', 0), (7, 'red', 0), (8, 'red', 0)],
+    #  [(4, 'red', 0), (5, 'red', 0), (6, 'red', 0), (7, 'red', 0)],
+    #  [(5, 'red', 1), (6, 'red', 0), (7, 'red', 0)],
+    #  [(1, 'red', 1), (2, 'red', 1), (3, 'red', 0), (4, 'red', 0), (5, 'red', 0), (6, 'red', 0)],
+    #  [(4, 'red', 0), (5, 'red', 0), (6, 'red', 0)],
+    #  [(1, 'red', 1), (2, 'red', 1), (3, 'red', 0), (4, 'red', 0), (5, 'red', 0)],
+    #  [(1, 'red', 1), (2, 'red', 1), (3, 'red', 0), (4, 'red', 0)],
+    #  [(1, 'red', 1), (2, 'red', 1), (3, 'red', 0)]]
+
     pass

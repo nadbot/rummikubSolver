@@ -1,6 +1,8 @@
 import random
 import networkx as nx
 
+from flask_tutorial.rummikub.Player import Player
+
 
 def create_piece_stack():
     """
@@ -55,6 +57,17 @@ def correct_move(gameboard, streets, added_pieces):
         if len(street) < 3:
             return False
     return True
+
+
+def winner(player):
+    """
+    Check if the player won (has no pieces left in his hand)
+    :param player: Player whose turn it is
+    :return: True, if Player won, otherwise False
+    """
+    if len(player.hand) == 0:
+        return True
+    return False
 
 
 def find_smaller_streets(playable_items):
@@ -346,7 +359,12 @@ def get_minimum_move_recursive(playable_items, items):
         print("Found best solution")
         return playable_items
     # print("Items are used more than once")
-    for index, street in enumerate(playable_items):
+    # for index, street in enumerate(playable_items):
+    # TODO fix this!!! Removed counter, since pop is used
+    #  and it is important to pop every one with every other possible move
+    #  only use next elements in recursion, as it does not matter if [a,b] or [b,a] is done as moves.
+    for index in range(len(playable_items)):
+        street = playable_items[index]
         # print("Using sublist")
         next_iteration = playable_items.copy()
         next_iteration.pop(index)
@@ -735,5 +753,7 @@ def move(player, gameboard):
             player.entered_game = True
     else:
         street, added = add_to_gameboard(player, gameboard)
-        modified_gameboard = True
+        if street:
+            modified_gameboard = True
     return street, modified_gameboard, added
+
