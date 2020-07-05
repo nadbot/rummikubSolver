@@ -65,7 +65,7 @@ def test_move_add_single_chip_to_three_of_kind():
     player.entered_game = True
     gameboard = [[(1, 'black', 0), (1, 'yellow', 0), (1, 'blue', 0)]]
     street, modified_gameboard, added = rf.move(player, gameboard)
-    assert street == [[(1, 'black', 0), (1, 'blue', 0), (1, 'red', 0),(1, 'yellow', 0)]]
+    assert equals(street, [[(1, 'black', 0), (1, 'blue', 0), (1, 'yellow', 0), (1, 'red', 0)]])
 
 
 def test_move_add_single_chip_to_street():
@@ -73,35 +73,35 @@ def test_move_add_single_chip_to_street():
     player.entered_game = True
     gameboard = [[(5, 'red', 0), (6, 'red', 0), (7, 'red', 0)]]
     street, modified_gameboard, added = rf.move(player, gameboard)
-    assert street == [[(4, 'red', 0), (5, 'red', 0), (6, 'red', 0), (7, 'red', 0)]]
+    assert equals(street, [[(4, 'red', 0), (5, 'red', 0), (6, 'red', 0), (7, 'red', 0)]])
 
     # check that it does not work if color is different
     player = Player(0, 'Player_test', [(4, 'blue', 0)])
     player.entered_game = True
     gameboard = [[(5, 'red', 0), (6, 'red', 0), (7, 'red', 0)]]
     street, modified_gameboard, added = rf.move(player, gameboard)
-    assert modified_gameboard == False
+    assert not modified_gameboard
 
     # check that it works when other chip with same value is used
     player = Player(0, 'Player_test', [(4, 'red', 1)])
     player.entered_game = True
     gameboard = [[(5, 'red', 0), (6, 'red', 0), (7, 'red', 0)]]
     street, modified_gameboard, added = rf.move(player, gameboard)
-    assert street == [[(4, 'red', 1), (5, 'red', 0), (6, 'red', 0), (7, 'red', 0)]]
+    assert equals(street, [[(4, 'red', 1), (5, 'red', 0), (6, 'red', 0), (7, 'red', 0)]])
 
     # check different street
     player = Player(0, 'Player_test', [(1, 'red', 0)])
     player.entered_game = True
     gameboard = [[(2, 'red', 0), (3, 'red', 0), (4, 'red', 0)]]
     street, modified_gameboard, added = rf.move(player, gameboard)
-    assert street == [[(1, 'red', 0), (2, 'red', 0), (3, 'red', 0), (4, 'red', 0)]]
+    assert equals(street, [[(1, 'red', 0), (2, 'red', 0), (3, 'red', 0), (4, 'red', 0)]])
 
     # check appending at end
     player = Player(0, 'Player_test', [(4, 'red', 0)])
     player.entered_game = True
     gameboard = [[(1, 'red', 0), (2, 'red', 0), (3, 'red', 0)]]
     street, modified_gameboard, added = rf.move(player, gameboard)
-    assert street == [[(1, 'red', 0), (2, 'red', 0), (3, 'red', 0), (4, 'red', 0)]]
+    assert equals(street, [[(1, 'red', 0), (2, 'red', 0), (3, 'red', 0), (4, 'red', 0)]])
 
 
 def test_splitting_street():
@@ -110,8 +110,8 @@ def test_splitting_street():
     player.entered_game = True
     gameboard = [[(2, 'red', 0), (3, 'red', 0), (4, 'red', 0), (5, 'red', 0), (6, 'red', 0), (7, 'red', 0)]]
     street, modified_gameboard, added = rf.move(player, gameboard)
-    assert street == [[(4, 'red', 0), (5, 'red', 0), (6, 'red', 0), (7, 'red', 0)],
-                      [(2, 'red', 0), (3, 'red', 0), (4, 'red', 1)]]
+    assert equals(street, [[(2, 'red', 0), (3, 'red', 0), (4, 'red', 1)],
+                           [(4, 'red', 0), (5, 'red', 0), (6, 'red', 0), (7, 'red', 0)]])
 
 
 def test_street_from_three_of_kinds():
@@ -153,3 +153,22 @@ def test_move():
     #  [(1, 'red', 1), (2, 'red', 1), (3, 'red', 0)]]
 
     pass
+
+
+def equals(a, b):
+    a.sort()
+    b.sort()
+    for element_a, element_b in zip(a, b):
+        if type(element_a) == list and type(element_b) == list:
+            element_a.sort()
+            element_b.sort()
+            for item_a, item_b in zip(element_a, element_b):
+                if item_a != item_b:
+                    return False
+        else:
+            if element_a != element_b:
+                return False
+    return True
+    # if a == b:
+    #     return True
+    # return False
