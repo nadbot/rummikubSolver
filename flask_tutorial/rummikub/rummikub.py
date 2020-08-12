@@ -60,6 +60,10 @@ def move(player, piece_stack, gameboard):
     # print(len(player0.hand))
 
 
+def draw(player, piece_stack, gameboard):
+    chip = rf.get_random_chip(piece_stack)
+    print("Drawing chip " + str(chip))
+    player.draw(chip)
 # everyone draws 14 pieces before the game starts
 # for _ in range(0, 14):
 #     for player in players:

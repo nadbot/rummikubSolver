@@ -1,12 +1,13 @@
 import json
 
 from flask import (
-    Blueprint
+    Blueprint,request
 )
 from flask_cors import CORS
 # app = Flask(__name__)
 # CORS(app)
 from rummikub import rummikub as r
+
 
 
 bp = Blueprint('rummikub', __name__)
@@ -26,12 +27,40 @@ def move():
     result = json.dumps({"Player":players[0].hand, "Gameboard":gameboard})
     return result
 
+
 @bp.route('/start')
 def start():
     global players, piece_stack, gameboard
     players, piece_stack, gameboard = r.start_game(1)
     result = json.dumps({"Player":players[0].hand, "Gameboard":gameboard})
     return result
+
+
+@bp.route('/draw')
+def draw():
+    global players, piece_stack, gameboard
+    r.draw(players[0], piece_stack, gameboard)
+    result = json.dumps({"Player": players[0].hand, "Gameboard": gameboard})
+    return result
+
+
+@bp.route('/receive', methods=['POST'])
+def receive():
+    global players, piece_stack, gameboard
+    if request.method == 'POST':
+        # title = request.form['title']
+        # body = request.form['body']
+        error = None
+        move = request.form['move']
+        received_board = json.loads(move)
+        print(received_board)
+        hand = received_board["Player"]
+        board = received_board["Gameboard"]
+        print(board)
+        return str(board)
+
+    return "test"
+        # return received_board["Player"][0]
 # @bp.route('/')
 # def index():
 #     db = get_db()

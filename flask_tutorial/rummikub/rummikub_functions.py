@@ -1,5 +1,6 @@
 import random
 import networkx as nx
+import numpy as np
 
 from flask_tutorial.rummikub.Player import Player
 
@@ -102,7 +103,7 @@ def find_streets(stack):
     items = sorted(stack, key=lambda x: x[0])
     # print(items)
 
-    for index in range(0, len(items)-1):
+    for index in range(0, len(items) - 1):
         element = items[index]
         # get only the ones of the same color as element
         same_color = [item for item in items if item[1] == element[1]]
@@ -117,20 +118,20 @@ def find_streets(stack):
             #     return []
             # print(same_color)
             index_element = same_color.index(element)
-            if len(same_color) == index_element+1:
+            if len(same_color) == index_element + 1:
                 break
             # Ignore if it is the same item twice (for example two black 7s)
-            if same_color[index_element+1][0] == element[0] and same_color[index_element+1][1] == element[1]:
+            if same_color[index_element + 1][0] == element[0] and same_color[index_element + 1][1] == element[1]:
                 # print("Found double")
                 # print(element)
                 # print(same_color[index_element+1])
                 element = same_color[index_element + 1]
                 continue
             # test if the number of the next item is one bigger and color is the same
-            if same_color[index_element+1][0] == element[0]+1 and same_color[index_element+1][1] == element[1]:
+            if same_color[index_element + 1][0] == element[0] + 1 and same_color[index_element + 1][1] == element[1]:
                 # print(same_color[index_element+1])
-                possible_street.append(same_color[index_element+1])
-                element = same_color[index_element+1]
+                possible_street.append(same_color[index_element + 1])
+                element = same_color[index_element + 1]
             else:
                 break
         if len(possible_street) > 2:
@@ -145,7 +146,7 @@ def find_streets(stack):
     return playable_items
 
 
-def color_in_list(chip,items):
+def color_in_list(chip, items):
     """
     Function to check whether the same color already exists in a list
     :param chip: Item whose color will be checked
@@ -177,6 +178,7 @@ def find_smaller_of_a_kind(playable_items):
                     playable_items.append(smaller_street)
     return playable_items
 
+
 def find_3_of_a_kind(stack):
     """
     Method to find 3 or more of the same value.
@@ -186,6 +188,7 @@ def find_3_of_a_kind(stack):
     """
     playable_items = []
     # sort by the number
+    print(stack)
     items = sorted(stack, key=lambda x: x[1])
     # print(items)
     for index in range(0, len(items) - 1):
@@ -627,6 +630,7 @@ def find_unaffected_moves(gameboard, clusters):
     #     cluster_item = [item]
     #
 
+
 # playable = [[(6, 'black', 0), (6, 'red', 1), (6, 'yellow', 1)], [(1, 'black', 0), (1, 'blue', 1), (1, 'red', 0), (1, 'yellow', 0)], [(9, 'black', 1), (9, 'blue', 0), (9, 'red', 1), (9, 'yellow', 1)], [(9, 'yellow', 0), (9, 'black', 1), (9, 'blue', 0), (9, 'red', 1)], [(1, 'blue', 1), (1, 'red', 0), (1, 'yellow', 0)], [(1, 'black', 0), (1, 'red', 0), (1, 'yellow', 0)], [(1, 'black', 0), (1, 'blue', 1), (1, 'yellow', 0)], [(1, 'black', 0), (1, 'blue', 1), (1, 'red', 0)], [(9, 'blue', 0), (9, 'red', 1), (9, 'yellow', 1)], [(9, 'black', 1), (9, 'red', 1), (9, 'yellow', 1)], [(9, 'black', 1), (9, 'blue', 0), (9, 'yellow', 1)], [(9, 'black', 1), (9, 'blue', 0), (9, 'red', 1)], [(9, 'yellow', 0), (9, 'blue', 0), (9, 'red', 1)], [(9, 'yellow', 0), (9, 'black', 1), (9, 'red', 1)], [(9, 'yellow', 0), (9, 'black', 1), (9, 'blue', 0)], [(9, 'yellow', 1), (10, 'yellow', 0), (11, 'yellow', 1)], [(9, 'yellow', 0), (10, 'yellow', 0), (11, 'yellow', 1)]]
 # items = []
 # for move in playable:
@@ -660,28 +664,80 @@ def find_unaffected_moves(gameboard, clusters):
 # best_move = get_minimum_moves(flat_list)
 # print(best_move)
 
+def move_with_elements(player, gameboard, extra_items, items_left):
+    flat_list = [item for sublist in gameboard for item in sublist]
+    # playable_items = find_matches(flat_list)
+    if type(extra_items) != list:
+        extra_items = [extra_items]
+    for item in extra_items:
+        flat_list.append(item)
+    print("Adding " + str(extra_items))
+    best_move = get_minimum_moves(flat_list, extra_items, gameboard)
+    if best_move:
+        print("Added " + str(extra_items))
+        print("Best move:")
+        print(best_move)
+        return best_move, extra_items
+    else:
+        if not items_left or len(items_left) == 0:
+            return [], []
+        print("No best move found")
+        # return None, None
+        best_move_recursive = None
+        extra_items_used = None
+        for item in items_left:
+            # TODO ignore order of elements (don't look back, store index and just choose from next items)
+            #  Adding [(2, 'black', 0), (0, 'Joker', 0), (1, 'red', 0), (2, 'blue', 0), (2, 'yellow', 0),
+            #  (5, 'black', 0), (13, 'yellow', 1), (10, 'yellow', 0), (12, 'yellow', 0), (11, 'blue', 0),
+            #  (7, 'blue', 0), (10, 'yellow', 1), (3, 'blue', 1)]
+            #  Adding [(2, 'black', 0), (0, 'Joker', 0), (1, 'red', 0), (2, 'blue', 0), (2, 'yellow', 0),
+            #  (5, 'black', 0), (13, 'yellow', 1), (10, 'yellow', 0), (12, 'yellow', 0), (11, 'blue', 0),
+            #  (7, 'blue', 0), (3, 'blue', 1), (10, 'yellow', 1)]
+            extra_items_copy = extra_items.copy()
+            extra_items_copy.append(item)
+            items_left_removed = items_left.copy()
+            items_left_removed.remove(item)
+            best_move_recursive, extra_items_used = move_with_elements(player, gameboard, extra_items_copy,
+                                                                       items_left_removed)
+            print(best_move_recursive)
+        if best_move_recursive:
+            print(best_move_recursive)
+            return best_move_recursive, extra_items_used
+    return [], []
+
+
 def add_to_gameboard(player, gameboard):
     """
         Method to find best possible move for player, once he is in the game
+        :param gameboard: Gameboard
         :param player: Player whose turn it is
         :return: best move the player can do
         """
     print("Adding to gameboard")
     # TODO add possibility to add multiple items at once to the gameboard
+    # TODO calculate how many points are placed during turn and choose option with most points
+    used_items_total = []
+    best_moves = []
+    points_placed = []
     for first_item in player.hand:
-        flat_list = [item for sublist in gameboard for item in sublist]
-        flat_list.append(first_item)
-        print("Adding "+ str(first_item))
-        # playable_items = find_matches(flat_list)
-        best_move = get_minimum_moves(flat_list, [first_item], gameboard)
+        items_left = player.hand.copy()
+        items_left.sort()
+        items_left.remove(first_item)
+        best_move, extra_items = move_with_elements(player, gameboard, first_item, items_left)
         if best_move:
-            print("Added "+str(first_item))
-            print("Best move:")
-            print(best_move)
-            return best_move, [first_item]
-        else:
-            print("No best move found")
+            best_moves.append(best_move)
+            used_items_total.append(extra_items)
+            # return best_move, extra_items
+    # go through all items used and choose option which gets you to loose the most points.
+    for item in used_items_total:
+        points_placed.append(calculate_points_for_street(item))
+    if points_placed:
+        best = max(points_placed)
+        best_idx = np.argmax(points_placed)
+        if best:
+            return best_moves[best_idx], used_items_total[best_idx]
     return [], []
+
     # '''
     # Idea:
     # If at least one item is not used, continue with player.hand[1]
@@ -756,4 +812,3 @@ def move(player, gameboard):
         if street:
             modified_gameboard = True
     return street, modified_gameboard, added
-

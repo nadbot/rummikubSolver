@@ -110,16 +110,70 @@ def test_splitting_street():
     player.entered_game = True
     gameboard = [[(2, 'red', 0), (3, 'red', 0), (4, 'red', 0), (5, 'red', 0), (6, 'red', 0), (7, 'red', 0)]]
     street, modified_gameboard, added = rf.move(player, gameboard)
-    assert equals(street, [[(2, 'red', 0), (3, 'red', 0), (4, 'red', 1)],
-                           [(4, 'red', 0), (5, 'red', 0), (6, 'red', 0), (7, 'red', 0)]])
+    assert equals(street, [[(2, 'red', 0), (3, 'red', 0), (4, 'red', 0)],
+                           [(4, 'red', 1), (5, 'red', 0), (6, 'red', 0), (7, 'red', 0)]]) \
+           or equals(street, [[(2, 'red', 0), (3, 'red', 0), (4, 'red', 1)],
+                              [(4, 'red', 0), (5, 'red', 0), (6, 'red', 0), (7, 'red', 0)]])
 
 
 def test_street_from_three_of_kinds():
-    pass
+    player = Player(0, 'Player_test', [(4, 'red', 0)])
+    player.entered_game = True
+    gameboard = [[(1, 'red', 0), (1, 'black', 0), (1, 'blue', 0)],
+                 [(2, 'red', 0), (2, 'black', 0), (2, 'blue', 0)],
+                 [(3, 'red', 0), (3, 'black', 0), (3, 'blue', 0)]]
+    street, modified_gameboard, added = rf.move(player, gameboard)
+    assert equals(street, [[(1, 'red', 0), (2, 'red', 0), (3, 'red', 0), (4, 'red', 0)],
+                           [(1, 'black', 0), (2, 'black', 0), (3, 'black', 0)],
+                           [(1, 'blue', 0), (2, 'blue', 0), (3, 'blue', 0)]])
+
+    # having 4 three of a kind
+    player = Player(0, 'Player_test', [(4, 'red', 0)])
+    player.entered_game = True
+    gameboard = [[(1, 'red', 0), (1, 'black', 0), (1, 'blue', 0), (1, 'yellow', 0)],
+                 [(2, 'red', 0), (2, 'black', 0), (2, 'blue', 0), (2, 'yellow', 0)],
+                 [(3, 'red', 0), (3, 'black', 0), (3, 'blue', 0), (3, 'yellow', 0)]]
+    street, modified_gameboard, added = rf.move(player, gameboard)
+    assert equals(street, [[(1, 'red', 0), (2, 'red', 0), (3, 'red', 0), (4, 'red', 0)],
+                           [(1, 'black', 0), (2, 'black', 0), (3, 'black', 0)],
+                           [(1, 'blue', 0), (2, 'blue', 0), (3, 'blue', 0)],
+                           [(1, 'yellow', 0), (2, 'yellow', 0), (3, 'yellow', 0)]])
 
 
 def test_three_of_kinds_from_streets():
-    pass
+    player = Player(0, 'Player_test', [(3, 'yellow', 0)])
+    player.entered_game = True
+    gameboard = [[(1, 'red', 0), (2, 'red', 0), (3, 'red', 0)],
+                 [(1, 'black', 0), (2, 'black', 0), (3, 'black', 0)],
+                 [(1, 'blue', 0), (2, 'blue', 0), (3, 'blue', 0)],
+                 [(1, 'yellow', 0), (2, 'yellow', 0), (3, 'yellow', 1)]]
+    street, modified_gameboard, added = rf.move(player, gameboard)
+    assert equals(street, [[(1, 'red', 0), (1, 'black', 0), (1, 'blue', 0)],
+                           [(2, 'red', 0), (2, 'black', 0), (2, 'blue', 0)],
+                           [(3, 'red', 0), (3, 'black', 0), (3, 'blue', 0), (3, 'yellow', 0)],
+                           [(1, 'yellow', 0), (2, 'yellow', 0), (3, 'yellow', 1)]])
+
+
+def test_add_two_chips():
+    player = Player(0, 'Player_test', [(4, 'red', 0), (5, 'red', 0)])
+    player.entered_game = True
+    gameboard = [[(1, 'red', 0), (2, 'red', 0), (3, 'red', 0)]]
+    street, modified_gameboard, added = rf.move(player, gameboard)
+    assert equals(street, [[(1, 'red', 0), (2, 'red', 0), (3, 'red', 0), (4, 'red', 0), (5, 'red', 0)]])
+
+    player = Player(0, 'Player_test', [(5, 'red', 0), (4, 'red', 0)])
+    player.entered_game = True
+    gameboard = [[(1, 'red', 0), (2, 'red', 0), (3, 'red', 0)]]
+    street, modified_gameboard, added = rf.move(player, gameboard)
+    assert equals(street, [[(1, 'red', 0), (2, 'red', 0), (3, 'red', 0), (4, 'red', 0), (5, 'red', 0)]])
+
+
+def test_add_two_chips_extra_items():
+    player = Player(0, 'Player_test', [(5, 'red', 0), (8, 'red', 0), (4, 'red', 0), (11, 'red', 0)])
+    player.entered_game = True
+    gameboard = [[(1, 'red', 0), (2, 'red', 0), (3, 'red', 0)]]
+    street, modified_gameboard, added = rf.move(player, gameboard)
+    assert equals(street, [[(1, 'red', 0), (2, 'red', 0), (3, 'red', 0), (4, 'red', 0), (5, 'red', 0)]])
 
 
 def test_move():
@@ -158,10 +212,14 @@ def test_move():
 def equals(a, b):
     a.sort()
     b.sort()
+    if len(a) != len(b):
+        return False
     for element_a, element_b in zip(a, b):
         if type(element_a) == list and type(element_b) == list:
             element_a.sort()
             element_b.sort()
+            if len(element_a) != len(element_b):
+                return False
             for item_a, item_b in zip(element_a, element_b):
                 if item_a != item_b:
                     return False
@@ -169,6 +227,3 @@ def equals(a, b):
             if element_a != element_b:
                 return False
     return True
-    # if a == b:
-    #     return True
-    # return False
