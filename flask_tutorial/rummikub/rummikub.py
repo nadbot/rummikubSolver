@@ -8,6 +8,8 @@ from flask_tutorial.rummikub.Player import Player
 
 # players, piece_stack, gameboard = None, None, None
 # define players
+
+
 def start_game(number_players):
     # global  players, piece_stack, gameboard
     gameboard = []
@@ -76,3 +78,22 @@ def draw(player, piece_stack, gameboard):
 #             break
 
 # print("Remaining chips: " + str([len(player.hand) for player in players]))
+
+
+def check_move(old_hand, new_hand, old_gameboard, new_gameboard):
+    """
+    :param old_hand: Hand with drawn chip but before any moves
+    :param new_hand: Hand after moving completed
+    :param old_gameboard: Gameboard before any moves
+    :param new_gameboard: Gameboard after any moves
+    :return: True, if move correct, else false
+    """
+    # check if all chips are still there
+    all_chips_there = rf.check_all_chips_still_there(old_hand, new_hand, old_gameboard, new_gameboard)
+    # check if all elements on gameboard are still on gameboard
+    all_chips_still_on_gameboard = rf.check_all_chips_still_on_gameboard(old_gameboard, new_gameboard)
+    # check if gameboard contains only correct streets
+    all_streets_correct = rf.check_correct_streets(new_gameboard)
+    # calculate played points
+    played_points = rf.points_played(old_hand, new_hand)
+    return all_chips_there & all_chips_still_on_gameboard & all_streets_correct, played_points

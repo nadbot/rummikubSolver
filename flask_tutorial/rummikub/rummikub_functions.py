@@ -39,9 +39,11 @@ def get_random_chip(piece_stack):
 
 def correct_move(gameboard, streets, added_pieces):
     """
+    TODO similar to check_correct_streets
     Method to check whether the planned move is correct.
     A move is correct if all items of the gameboard are still there and only the added values are new.
     Additionally, each list must contain 3 or more items
+    TODO add check if streets are correct (only following elements or 3 of a kind (but no color twice))
     :param gameboard: Gameboard before the move
     :param streets: Gameboard after the move
     :param added_pieces: Pieces added during the move
@@ -57,8 +59,96 @@ def correct_move(gameboard, streets, added_pieces):
     for street in streets:
         if len(street) < 3:
             return False
+    # TODO check if streets are actually correct
     return True
 
+
+def check_all_chips_still_there(old_hand, new_hand, old_gameboard, new_gameboard):
+    """
+    Checks if all elements of the old hand + old gameboard are still in new gameboard and new hand
+    :param old_hand: Hand before the move
+    :param new_hand: Hand after the move
+    :param old_gameboard: Gameboard before the move
+    :param new_gameboard: Gameboard after the move
+    :return: True, if all chips are still there, no chips deleted or added
+    """
+    flat_list_old_gameboard = [item for sublist in old_gameboard for item in sublist]
+    flat_list_new_gameboard = [item for sublist in new_gameboard for item in sublist]
+    # merge hand and gameboard together
+    flat_list_old_gameboard.extend(old_hand)
+    flat_list_new_gameboard.extend(new_hand)
+    # print("extended lists")
+    # print(flat_list_old_gameboard)
+    # print(flat_list_new_gameboard)
+    for element in flat_list_old_gameboard:
+        if element not in flat_list_new_gameboard:
+            return False
+    for element in flat_list_new_gameboard:
+        if element not in flat_list_old_gameboard:
+            return False
+    return True
+
+
+def check_all_chips_still_on_gameboard(old_gameboard, new_gameboard):
+    """
+    Checks if all chips that were on the gameboard before the turn are still there (the person did not pick any up)
+    :param old_gameboard: Gameboard before the move
+    :param new_gameboard: Gameboard after the move
+    :return: True, if all chips are still there, otherwise False
+    """
+    flat_list_old_gameboard = [item for sublist in old_gameboard for item in sublist]
+    flat_list_new_gameboard = [item for sublist in new_gameboard for item in sublist]
+    for element in flat_list_old_gameboard:
+        if element not in flat_list_new_gameboard:
+            return False
+    return True
+
+
+def check_correct_streets(new_gameboard):
+    """
+    Checks if each street is either multiple of a kind or an actual street
+    TODO add jokers
+    Does not accept streets in the wrong order
+    :param new_gameboard: Gameboard that is being checked
+    :return: True if all streets are correct, otherwise False
+    """
+    for street in new_gameboard:
+        # variable to determine whether street is 3 of a kind or actual street (will be updated only once per street)
+        street_kind = None
+        colors = []
+        if len(street) == 0:
+            continue
+        if len(street) < 3:
+            return False
+        for index in range(len(street)-1):
+            number, color, _ = street[index]
+            next_number, next_color, _ = street[index+1]
+            if number == next_number:
+                if color != next_color and color not in colors:
+                    if street_kind is None:
+                        street_kind = 'kind'
+                    elif street_kind is 'street':
+                        return False
+                    # street is more of a kind
+                    colors.append(color)
+                else:
+                    return False
+            elif number+1 == next_number and color == next_color:
+                if street_kind is None:
+                    street_kind = 'street'
+                elif street_kind is 'kind':
+                    return False
+                continue
+            else:
+                return False
+    return True
+
+def points_played(old_hand, new_hand):
+    played_points = 0
+    for element in old_hand:
+        if element not in new_hand:
+            played_points += element[0]
+    return played_points
 
 def winner(player):
     """

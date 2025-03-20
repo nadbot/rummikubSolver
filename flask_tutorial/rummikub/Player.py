@@ -29,3 +29,4 @@ class Player:
 
     def __str__(self):
         return str([str(x) for x in self.hand])
+

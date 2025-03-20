@@ -56,10 +56,25 @@ def receive():
         print(received_board)
         hand = received_board["Player"]
         board = received_board["Gameboard"]
+        # transform the chips to tuples
+        hand = list(map(tuple, hand))
+        board = [list(map(tuple, item)) for item in board]
         print(board)
-        return str(board)
+        print("old_hand"+str(players[0].hand))
+        print("hand" + str(hand))
+        print("old_gameboard" + str(gameboard))
+        print("new_gameboard" + str(board))
+        correct, points = r.check_move(players[0].hand, hand, gameboard, board)
+        if correct:
+            gameboard = board
+            players[0].hand = hand
+            if len(players[0].hand) == 0:
+                return str("You win")
+            return str("Move correct, it's the turn of the next player now")
+        else:
+            return str("Incorrect move")
 
-    return "test"
+    return "Invalid request, please try again"
         # return received_board["Player"][0]
 # @bp.route('/')
 # def index():
